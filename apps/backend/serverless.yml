@@ -1,0 +1,254 @@
+service: cards-after-dark-backend
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  
+  environment:
+    STAGE: ${self:provider.stage}
+    
+    # DynamoDB Tables
+    USERS_TABLE: CardsAfterDark-Users-${self:provider.stage}
+    COUPLES_TABLE: CardsAfterDark-Couples-${self:provider.stage}
+    GAME_SESSIONS_TABLE: CardsAfterDark-GameSessions-${self:provider.stage}
+    RATINGS_TABLE: CardsAfterDark-Ratings-${self:provider.stage}
+    INVITATIONS_TABLE: CardsAfterDark-Invitations-${self:provider.stage}
+    VERIFICATION_SESSIONS_TABLE: CardsAfterDark-VerificationSessions-${self:provider.stage}
+    
+    # Security
+    JWT_SECRET: ${env:JWT_SECRET, 'dev-secret-change-in-production'}
+    
+    # AI Configuration
+    BEDROCK_MODEL_ID: anthropic.claude-3-sonnet-20240229-v1:0
+    
+  iamRoleStatements:
+    # DynamoDB permissions
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 
+        - "arn:aws:dynamodb:${self:provider.region}:*:table/CardsAfterDark-*"
+        - "arn:aws:dynamodb:${self:provider.region}:*:table/CardsAfterDark-*/index/*"
+    
+    # Bedrock permissions
+    - Effect: Allow
+      Action:
+        - bedrock:InvokeModel
+      Resource: "*"
+    
+    # SNS permissions for SMS
+    - Effect: Allow
+      Action:
+        - sns:Publish
+      Resource: "*"
+    
+    # CloudWatch Logs
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+      Resource: "arn:aws:logs:${self:provider.region}:*:*"
+
+functions:
+  graphql:
+    handler: src/lambda.handler
+    timeout: 30
+    memorySize: 512
+    events:
+      - http:
+          path: /
+          method: ANY
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+
+  # Daily notification function (7pm notifications)
+  dailyNotifications:
+    handler: src/services/notifications.sendDailyNotifications
+    timeout: 300
+    memorySize: 256
+    events:
+      - schedule:
+          rate: cron(0 * * * ? *)  # Every hour, filter by timezone in code
+          enabled: true
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-typescript
+
+custom:
+  serverless-offline:
+    httpPort: 3001
+    lambdaPort: 3002
+    websocketPort: 3003
+
+resources:
+  Resources:
+    # Users Table
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CardsAfterDark-Users-${self:provider.stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: phoneNumber
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: PhoneIndex
+            KeySchema:
+              - AttributeName: phoneNumber
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    # Couples Table
+    CouplesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CardsAfterDark-Couples-${self:provider.stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+
+    # Game Sessions Table
+    GameSessionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CardsAfterDark-GameSessions-${self:provider.stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: coupleId
+            AttributeType: S
+          - AttributeName: date
+            AttributeType: S
+        KeySchema:
+          - AttributeName: coupleId
+            KeyType: HASH
+          - AttributeName: date
+            KeyType: RANGE
+
+    # Ratings Table
+    RatingsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CardsAfterDark-Ratings-${self:provider.stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: cardId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: cardId
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: CardIndex
+            KeySchema:
+              - AttributeName: cardId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    # Invitations Table
+    InvitationsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CardsAfterDark-Invitations-${self:provider.stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: phoneNumber
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: PhoneIndex
+            KeySchema:
+              - AttributeName: phoneNumber
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    # Verification Sessions Table
+    VerificationSessionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CardsAfterDark-VerificationSessions-${self:provider.stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: sessionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: sessionId
+            KeyType: HASH
+        TimeToLiveSpecification:
+          AttributeName: expiresAt
+          Enabled: true
+
+  Outputs:
+    GraphQLApiUrl:
+      Description: "GraphQL API URL"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api."
+            - ${self:provider.region}
+            - ".amazonaws.com/"
+            - ${self:provider.stage}
+
+    UsersTableName:
+      Description: "Users DynamoDB Table Name"
+      Value:
+        Ref: UsersTable
+      Export:
+        Name: CardsAfterDark-UsersTable-${self:provider.stage}
+
+    CouplesTableName:
+      Description: "Couples DynamoDB Table Name"
+      Value:
+        Ref: CouplesTable
+      Export:
+        Name: CardsAfterDark-CouplesTable-${self:provider.stage}

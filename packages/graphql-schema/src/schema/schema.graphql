@@ -1,0 +1,246 @@
+scalar DateTime
+
+# Enums
+enum CardCategory {
+  ROMANCE
+  SENSUAL
+  DATE_NIGHT
+  PLAYFUL
+  INTIMATE
+  ADVENTURE
+}
+
+enum GameSessionStatus {
+  WAITING
+  DRAWN
+  VOTING
+  SELECTED
+  COMPLETED
+}
+
+enum InvitationStatus {
+  SENT
+  ACCEPTED
+  EXPIRED
+}
+
+# Core Types
+type User {
+  id: ID!
+  phoneNumber: String!
+  firstName: String!
+  lastName: String!
+  avatarUrl: String
+  partnerId: ID
+  coupleId: ID
+  isVerified: Boolean!
+  createdAt: DateTime!
+  fcmToken: String
+}
+
+type Card {
+  id: ID!
+  title: String!
+  description: String!
+  kinkFactor: Int! # 1-3 multiplier
+  category: CardCategory!
+  tags: [String!]!
+}
+
+type DrawnCard {
+  userId: ID!
+  card: Card!
+  drawnAt: DateTime!
+}
+
+type Vote {
+  userId: ID!
+  cardId: ID!
+  votedAt: DateTime!
+}
+
+type GameSession {
+  id: ID!
+  coupleId: ID!
+  date: String!
+  userCards: [DrawnCard!]!
+  votes: [Vote!]!
+  selectedCard: DrawnCard
+  completed: Boolean!
+  points: Int!
+  status: GameSessionStatus!
+  createdAt: DateTime!
+  completedAt: DateTime
+}
+
+type CouplePreferences {
+  categories: [CardCategory!]!
+  maxKinkFactor: Int!
+  excludedTags: [String!]!
+  notificationTime: String!
+  timezone: String
+}
+
+type CoupleProfile {
+  id: ID!
+  users: [User!]!
+  totalPoints: Int!
+  level: Int!
+  streakDays: Int!
+  preferences: CouplePreferences
+  createdAt: DateTime!
+}
+
+type Rating {
+  userId: ID!
+  cardId: ID!
+  rating: Int!
+  createdAt: DateTime!
+}
+
+type Invitation {
+  id: ID!
+  phoneNumber: String!
+  invitingUserId: ID!
+  invitingUser: User!
+  status: InvitationStatus!
+  sentAt: DateTime!
+  acceptedAt: DateTime
+}
+
+# Authentication Types
+type AuthResponse {
+  token: String!
+  user: User!
+  couple: CoupleProfile
+}
+
+type PhoneVerificationResponse {
+  sessionId: String!
+  message: String!
+}
+
+# AI Types
+type AIRecommendation {
+  cards: [Card!]!
+  reasoning: String
+}
+
+# Input Types
+input UserRegistrationInput {
+  phoneNumber: String!
+  firstName: String!
+  lastName: String!
+  avatarUrl: String
+}
+
+input CouplePreferencesInput {
+  categories: [CardCategory!]!
+  maxKinkFactor: Int!
+  excludedTags: [String!]!
+  notificationTime: String
+  timezone: String
+}
+
+input UpdateProfileInput {
+  firstName: String
+  lastName: String
+  avatarUrl: String
+}
+
+input CompleteActivityInput {
+  sessionId: ID!
+  rating: Int
+  notes: String
+}
+
+# Queries
+type Query {
+  # User queries
+  me: User
+  getUserProfile(userId: ID!): User
+  
+  # Couple queries
+  getCouple: CoupleProfile
+  getCoupleByUsers(userIds: [ID!]!): CoupleProfile
+  
+  # Game queries
+  getDailyCards: [Card!]!
+  getGameSession(date: String!): GameSession
+  getCurrentGameSession: GameSession
+  getGameHistory(limit: Int = 20): [GameSession!]!
+  
+  # Card queries
+  getCard(cardId: ID!): Card
+  getCardCategories: [CardCategory!]!
+  searchCards(query: String!, category: CardCategory, maxKinkFactor: Int): [Card!]!
+  
+  # Rating queries
+  getUserRatings(userId: ID!, limit: Int = 50): [Rating!]!
+  getCardRatings(cardId: ID!): [Rating!]!
+  
+  # Invitation queries
+  getPendingInvitations: [Invitation!]!
+  getInvitationByPhone(phoneNumber: String!): Invitation
+}
+
+# Mutations
+type Mutation {
+  # Authentication
+  sendPhoneVerification(phoneNumber: String!): PhoneVerificationResponse!
+  verifyPhoneCode(sessionId: String!, code: String!): AuthResponse!
+  refreshToken(refreshToken: String!): AuthResponse!
+  
+  # User management
+  completeProfile(input: UserRegistrationInput!): User!
+  updateProfile(input: UpdateProfileInput!): User!
+  updateFCMToken(token: String!): Boolean!
+  deleteUser: Boolean!
+  
+  # Partner management
+  invitePartner(phoneNumber: String!): Invitation!
+  acceptInvitation(invitationId: ID!): CoupleProfile!
+  cancelInvitation(invitationId: ID!): Boolean!
+  
+  # Couple management
+  createCouple(partnerId: ID!): CoupleProfile!
+  updatePreferences(input: CouplePreferencesInput!): CouplePreferences!
+  leaveCouple: Boolean!
+  
+  # Game actions
+  drawCard: DrawnCard!
+  voteForCard(cardId: ID!): Boolean!
+  selectCard(cardId: ID!): GameSession!
+  completeActivity(input: CompleteActivityInput!): GameSession!
+  
+  # Rating
+  rateCard(cardId: ID!, rating: Int!): Rating!
+  updateRating(cardId: ID!, rating: Int!): Rating!
+  deleteRating(cardId: ID!): Boolean!
+  
+  # Admin (future)
+  createCard(title: String!, description: String!, kinkFactor: Int!, category: CardCategory!, tags: [String!]!): Card!
+}
+
+# Subscriptions
+type Subscription {
+  # Partner activity
+  onPartnerCardDrawn(coupleId: ID!): DrawnCard!
+  onPartnerVote(coupleId: ID!): Vote!
+  onVotingComplete(coupleId: ID!): GameSession!
+  onActivityCompleted(coupleId: ID!): GameSession!
+  
+  # Invitations
+  onInvitationReceived(phoneNumber: String!): Invitation!
+  onInvitationAccepted(invitationId: ID!): CoupleProfile!
+  
+  # Notifications
+  onNotification(userId: ID!): PushNotification!
+}
+
+# Notification type for subscriptions
+type PushNotification {
+  title: String!
+  body: String!
+  data: String # JSON string
+}

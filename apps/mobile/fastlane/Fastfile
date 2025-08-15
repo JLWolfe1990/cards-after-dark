@@ -1,0 +1,66 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:android)
+
+platform :android do
+  desc "Runs all the tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Submit a new Beta Build to Firebase App Distribution"
+  lane :beta do
+    gradle(task: "clean assembleRelease")
+    firebase_app_distribution(
+      app: "1:123456789012:android:abcdef123456789012345678",
+      testers: "team@cardsafterdark.com",
+      release_notes: "New beta version with latest features"
+    )
+  end
+
+  desc "Deploy a new version to the Google Play"
+  lane :deploy do
+    gradle(task: "clean bundleRelease")
+    upload_to_play_store(
+      track: "production",
+      release_status: "draft"
+    )
+  end
+end
+
+platform :ios do
+  desc "Generate new localized screenshots"
+  lane :screenshots do
+    capture_screenshots(workspace: "CardsAfterDark.xcworkspace", scheme: "CardsAfterDark")
+  end
+
+  desc "Submit a new Beta Build to TestFlight"
+  lane :beta do
+    build_app(workspace: "CardsAfterDark.xcworkspace", scheme: "CardsAfterDark")
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Deploy a new version to the App Store"
+  lane :release do
+    build_app(workspace: "CardsAfterDark.xcworkspace", scheme: "CardsAfterDark")
+    upload_to_app_store(
+      submit_for_review: false,
+      automatic_release: false
+    )
+  end
+end

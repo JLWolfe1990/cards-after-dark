@@ -1,0 +1,25 @@
+{
+  "name": "@cards-after-dark/graphql-schema",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "codegen": "graphql-codegen --config codegen.yml",
+    "clean": "rm -rf dist src/generated",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cards-after-dark/shared": "workspace:*",
+    "graphql": "^16.8.0"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.0",
+    "@graphql-codegen/typescript": "^4.0.0",
+    "@graphql-codegen/typescript-operations": "^4.0.0",
+    "@graphql-codegen/typescript-react-apollo": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
