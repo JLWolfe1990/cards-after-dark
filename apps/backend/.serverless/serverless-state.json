@@ -243,7 +243,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/cards-after-dark-backend/dev/1755203846427-2025-08-14T20:37:26.427Z/cards-after-dark-backend.zip"
+                "S3Key": "serverless/cards-after-dark-backend/dev/1755226482165-2025-08-15T02:54:42.165Z/cards-after-dark-backend.zip"
               },
               "Handler": "src/lambda.handler",
               "Runtime": "nodejs18.x",
@@ -281,7 +281,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/cards-after-dark-backend/dev/1755203846427-2025-08-14T20:37:26.427Z/cards-after-dark-backend.zip"
+                "S3Key": "serverless/cards-after-dark-backend/dev/1755226482165-2025-08-15T02:54:42.165Z/cards-after-dark-backend.zip"
               },
               "Handler": "src/services/notifications.sendDailyNotifications",
               "Runtime": "nodejs18.x",
@@ -312,24 +312,24 @@
               "DailyNotificationsLogGroup"
             ]
           },
-          "GraphqlLambdaVersion9yQPrwfc2rlIbix5V07Odc5Ltn21qHKsG3wywgHU8": {
+          "GraphqlLambdaVersiontJRxGqxgVkMwEATjwDY9S2kmkI7pwdtI2pm4tLA": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "GraphqlLambdaFunction"
               },
-              "CodeSha256": "Ob3bOy81S+RgT7RBW8DrQxjKgeZIWi9MuHusg5mF9Ks="
+              "CodeSha256": "T5Lx9ljqbv/F5+IV6oDjP3gFiQ7P4ygTTybNt/zjPnc="
             }
           },
-          "DailyNotificationsLambdaVersionHh3rCpaYYeMeTEfqoDVV3fHssvk9XQ00IEEFsEkd1g": {
+          "DailyNotificationsLambdaVersionwJ0M3biFCZfQWNwHGimknlnbWqbXsV05rHLFZKS5es": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "DailyNotificationsLambdaFunction"
               },
-              "CodeSha256": "Ob3bOy81S+RgT7RBW8DrQxjKgeZIWi9MuHusg5mF9Ks="
+              "CodeSha256": "T5Lx9ljqbv/F5+IV6oDjP3gFiQ7P4ygTTybNt/zjPnc="
             }
           },
           "DailyNotificationsEventsRuleSchedule1": {
@@ -584,7 +584,7 @@
               "GraphqlLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1755203839402": {
+          "ApiGatewayDeployment1755226475364": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -833,7 +833,7 @@
           "GraphqlLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "GraphqlLambdaVersion9yQPrwfc2rlIbix5V07Odc5Ltn21qHKsG3wywgHU8"
+              "Ref": "GraphqlLambdaVersiontJRxGqxgVkMwEATjwDY9S2kmkI7pwdtI2pm4tLA"
             },
             "Export": {
               "Name": "sls-cards-after-dark-backend-dev-GraphqlLambdaFunctionQualifiedArn"
@@ -842,7 +842,7 @@
           "DailyNotificationsLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "DailyNotificationsLambdaVersionHh3rCpaYYeMeTEfqoDVV3fHssvk9XQ00IEEFsEkd1g"
+              "Ref": "DailyNotificationsLambdaVersionwJ0M3biFCZfQWNwHGimknlnbWqbXsV05rHLFZKS5es"
             },
             "Export": {
               "Name": "sls-cards-after-dark-backend-dev-DailyNotificationsLambdaFunctionQualifiedArn"
@@ -1072,7 +1072,7 @@
         "memory": 512,
         "runtime": "nodejs18.x",
         "vpc": {},
-        "versionLogicalId": "GraphqlLambdaVersion9yQPrwfc2rlIbix5V07Odc5Ltn21qHKsG3wywgHU8"
+        "versionLogicalId": "GraphqlLambdaVersiontJRxGqxgVkMwEATjwDY9S2kmkI7pwdtI2pm4tLA"
       },
       "dailyNotifications": {
         "handler": "src/services/notifications.sendDailyNotifications",
@@ -1099,7 +1099,7 @@
         "memory": 256,
         "runtime": "nodejs18.x",
         "vpc": {},
-        "versionLogicalId": "DailyNotificationsLambdaVersionHh3rCpaYYeMeTEfqoDVV3fHssvk9XQ00IEEFsEkd1g"
+        "versionLogicalId": "DailyNotificationsLambdaVersionwJ0M3biFCZfQWNwHGimknlnbWqbXsV05rHLFZKS5es"
       }
     },
     "resources": {
@@ -1350,10 +1350,10 @@
     },
     "layers": {},
     "isDashboardMonitoringPreconfigured": false,
-    "artifact": "/home/jwolfe/git/cards-after-dark/apps/backend/.build/.serverless/cards-after-dark-backend.zip"
+    "artifact": "/media/jwolfe/MainStorage/git/cards-after-dark/apps/backend/.build/.serverless/cards-after-dark-backend.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/cards-after-dark-backend/dev/1755203846427-2025-08-14T20:37:26.427Z",
+    "artifactDirectoryName": "serverless/cards-after-dark-backend/dev/1755226482165-2025-08-15T02:54:42.165Z",
     "artifact": "cards-after-dark-backend.zip"
   }
 }

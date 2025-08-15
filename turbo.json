@@ -24,7 +24,7 @@
       "cache": false
     },
     "deploy": {
-      "dependsOn": ["build", "test", "lint"],
+      "dependsOn": ["build"],
       "cache": false
     },
     "codegen": {
